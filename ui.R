@@ -34,7 +34,7 @@ fluidPage(
       helpText("$$\\text{Storage: } \\beta E_t P_{t+1}-P_t-k\\bar{P}\\le 0, =0 \\text{ if } S_t >0$$"),
       helpText("$$\\text{Market clearing: } A_t = D\\left(P_t\\right)+S_t$$"),
       h3("Fixed parameters"),
-      helpText("$$\\bar{D}=\\bar{P}=1$$"),
+      helpText("Steady-state quantities and price are normalized to unity: \\(\\bar{D}=\\bar{P}=1\\)"),
       helpText("$$\\beta=1/\\left(1+r\\right)=0.98$$"),
       helpText("$$e\\sim N\\left(0,1\\right)$$")
     ),

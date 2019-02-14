@@ -30,7 +30,7 @@ function(input, output){
       scale_color_manual(values = c("red", "black"),
                          name = "",
                          breaks = c("Pinv", "P"),
-                         labels = c("Inverse demand function", 
+                         labels = c("Inverse demand function",
                                     "Price including demand for storage")) +
       geom_point(aes(x = 1, y = 1, col = "Pinv")) +
       xlim(min(c(m$sim$A))*0.9, max(c(m$sim$A)*1.1)) +
@@ -47,11 +47,12 @@ function(input, output){
     validate(need(m$SolveStat$exitflag == 1, "Failure to solve the model"))
     sim <- m$sim
     ggplot(data = tibble(P = c(sim$P)), aes(x = P)) +
-      geom_histogram(aes(y=..density.., color = "P"), colour = "red", fill = "white") +
+      geom_histogram(aes(y = ..density.., color = "P"), colour = "red", fill = "white") +
       geom_density(alpha = .2, fill = "#FF6666", col = "red") +
       geom_line(aes(y = P, x = d),
                 data = tibble(d = seq(min(c(sim$P)), max(c(sim$P)), len = 100),
-                              P = dnorm(d, mean = m$params$pbar, sd = -m$params$pbar*m$params$SDe/m$params$elastD))) +
+                              P = dnorm(d, mean = m$params$pbar,
+                                        sd = -m$params$pbar*m$params$SDe/m$params$elastD))) +
       xlab("Price") + ylab("Density") +
       geom_vline(xintercept = mean(c(sim$P)), col = "blue") +
       ggtitle("Price distribution (in black price distribution without stocks, in blue mean price)") +
@@ -59,15 +60,15 @@ function(input, output){
   })
 
   output$statHeader = renderText("Statistics on the asymptotic distribution")
-  
+
   output$statTable <- renderTable({
     m <- model()
     validate(need(m$SolveStat$exitflag == 1, "Failure to solve the model"))
-    P_acf <- 
+    P_acf <-
       m$sim$P %>%
       apply(1, function(x) acf(x, plot = FALSE)[1:2]$acf) %>%
       rowMeans()
-    A_acf <- 
+    A_acf <-
       m$sim$A %>%
       apply(1, function(x) acf(x, plot = FALSE)[1:2]$acf) %>%
       rowMeans()
