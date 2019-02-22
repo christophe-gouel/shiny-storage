@@ -36,7 +36,6 @@ SolveStorage <- function(model) {
   kshocks <- length(e)
 
   PriceInterp <- splinefun(A, P, method = "monoH.FC")
-  ## PriceInterp <- approxfun(A,P, rule = 2)
 
   while(dis > TolX & Iter < MaxIter) {
     Iter <- Iter + 1
@@ -44,13 +43,16 @@ SolveStorage <- function(model) {
 
     # Calculate next-period availability
     S <- A - demand(P)
-    Anext <- as.vector(t(plyr::maply((1 - delta) * S,
-                                     function(x) x + dbar * (1 + SDe * e))))
+    Anext <-
+      apply((1 - delta) * S, MARGIN = 1,
+            function(x) x + dbar * (1 + SDe * e)) %>%
+      t() %>%
+      as.vector()
 
     # Update the price and its approximation
     Pnext <- PriceInterp(Anext)
     P <- pmax(PA,
-              beta * as.vector(t(w) %*% matrix(Pnext, kshocks, n)) - k * pbar);
+              beta * matrix(Pnext, nrow = n, ncol = kshocks) %*% w - k * pbar);
     PriceInterp <- splinefun(A, P, method = "monoH.FC")
 
     dis <- max(abs(P - Pold))
@@ -77,7 +79,8 @@ SimulateStorage <- function(model, A0, nper = 100, nrep = 100, nburn = 20) {
   S <- matrix(nrow = nrep, ncol = ntot)
   P <- matrix(nrow = nrep, ncol = ntot)
   set.seed(1)
-  e <- matrix(c(rep(NA, nrep), rnorm(nrep * (ntot - 1))), nrow = nrep, ncol = ntot)
+  e <- c(rep(NA, nrep), rnorm(nrep * (ntot - 1))) %>%
+    matrix(nrow = nrep, ncol = ntot)
   for (t in 1:ntot) {
     if (t > 1) A[,t] <- (1 - delta) * S[,t-1] + dbar * (1 + SDe * e[,t])
     S[,t] <- StorageInterp(A[,t])

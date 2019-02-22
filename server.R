@@ -6,9 +6,9 @@ function(input, output){
     model <- list()
     model$params <- list(pbar = 1, dbar = 1, k = input$k / 100, delta = 0,
                          r = 0.02, elastD = input$elastD, SDe = input$SDe / 100)
-    model$s <- seq(0.8, 1.5, length = 200)
-    model$shocks <- list(e = gherm$nodes,
-                         w = gherm$weights/sum(gherm$weights))
+    model$s <- matrix(seq(0.8, 1.5, length = 200), ncol = 1)
+    model$shocks <- list(e = matrix(gherm$nodes, nrow = 1),
+                         w = matrix(gherm$weights/sum(gherm$weights), ncol = 1))
     model$P <- model$params$pbar*(1+(model$s-model$params$dbar)/(model$params$elastD*model$params$dbar))
     model <- SolveStorage(model)
     model$sim <- SimulateStorage(model, 1)
