@@ -1,0 +1,1 @@
+[Christophe Gouel](https://www.christophegouel.com) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Source](https://img.shields.io/badge/Source-github-green.svg)](https://github.com/christophe-gouel/shiny-storage)

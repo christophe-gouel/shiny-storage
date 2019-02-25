@@ -84,6 +84,12 @@ function(input, output){
                 Q95 = quantile(value, 0.95)) %>%
       mutate(AC1 = c(A_acf[1], P_acf[1]),
              AC2 = c(A_acf[2], P_acf[2])) %>%
+      add_row(Variable = "A (without stocks)", Mean = 1, Median = 1,
+              Std = m$params$dbar*m$params$SDe,
+              Skewness = 0, `Excess-kurtosis` = 0,
+              Q05 = qnorm(0.05, mean = 1, sd = m$params$dbar*m$params$SDe),
+              Q95 = qnorm(0.95, mean = 1, sd = m$params$dbar*m$params$SDe),
+              AC1 = 0, AC2 = 0) %>%
       add_row(Variable = "P (without stocks)", Mean = 1, Median = 1,
               Std = -m$params$pbar*m$params$SDe/m$params$elastD,
               Skewness = 0, `Excess-kurtosis` = 0,

@@ -36,17 +36,21 @@ fluidPage(
       h3("Fixed parameters"),
       helpText("Steady-state quantities and price are normalized to unity: \\(\\bar{D}=\\bar{P}=1\\)"),
       helpText("$$\\beta=1/\\left(1+r\\right)=0.98$$"),
-      helpText("$$e\\sim N\\left(0,1\\right)$$")
+      helpText("$$e\\sim N\\left(0,1\\right)$$"),
+      h2("Warnings"),
+      helpText("The model may not converge for all possible combinations of parameters. If this is the case, try other values.")
     ),
 
-    # Main panel for displaying outputs ----
+                                        # Main panel for displaying outputs ----
     mainPanel(
 
-      # Output: Histogram ----
+                                        # Output: Histogram ----
       plotOutput(outputId = "demandFun"),
       plotOutput(outputId = "PriceDistrib"),
       h3(textOutput("statHeader")),
       tableOutput("statTable")
     )
-  )
+  ),
+  hr(),
+  includeMarkdown("badges.md")
 )

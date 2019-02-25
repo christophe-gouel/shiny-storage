@@ -11,7 +11,7 @@ Review of Economic Studies)](https://doi.org/10.2307/2297923).
 
 You can launch the application from R with
 ```r
-shiny::runGitHub(repo = "christophe-gouel/shiny-storage", ref = "mybinder", subdir = "app")
+shiny::runGitHub(repo = "christophe-gouel/shiny-storage", subdir = "app")
 ```
 or use it online at
 <https://christophe-gouel.shinyapps.io/Storage-model/>.
