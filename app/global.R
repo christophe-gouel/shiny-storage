@@ -1,5 +1,6 @@
 library(dplyr)
 library(ggplot2)
+library(markdown)
 library(moments)
 library(statmod)
 library(tidyr)
