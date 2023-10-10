@@ -4,9 +4,11 @@ function(input, output){
 
   model <- reactive({
     model <- list()
-    model$params <- list(pbar = 1, dbar = 1, k = input$k / 100, delta = 0,
+    model$params <- list(pbar = input$pbar, dbar = input$dbar, k = input$k / 100, delta = 0,
                          r = 0.02, elastD = input$elastD, SDe = input$SDe / 100)
-    model$s <- matrix(seq(0.8, 1.5, length = 200), ncol = 1)
+    model$s <- matrix(seq(model$params$dbar - 4 * model$params$SDe,
+                          1.5 * model$params$dbar,
+                          length = 200), ncol = 1)
     model$shocks <- list(e = matrix(gherm$nodes, nrow = 1),
                          w = matrix(gherm$weights/sum(gherm$weights), ncol = 1))
     model$P <- model$params$pbar*(1+(model$s-model$params$dbar)/(model$params$elastD*model$params$dbar))
@@ -32,9 +34,7 @@ function(input, output){
                          breaks = c("Pinv", "P"),
                          labels = c("Inverse demand function",
                                     "Price including demand for storage")) +
-      geom_point(aes(x = 1, y = 1, col = "Pinv")) +
-      xlim(min(c(m$sim$A))*0.9, max(c(m$sim$A)*1.1)) +
-      ylim(min(c(m$sim$P))*0.9, max(c(m$sim$P)*1.1)) +
+      geom_point(aes(x = m$params$dbar, y = m$params$pbar, col = "Pinv")) +
       xlab("Availability") + ylab("Price") +
       ggtitle("Inverse demand function") +
       theme_light() +
@@ -77,24 +77,26 @@ function(input, output){
       group_by(Variable) %>%
       summarize(Mean = mean(value),
                 Median = median(value),
-                Std = sd(value),
+                CV = sd(value) / mean(value),
                 Skewness = skewness(value),
                 `Excess-kurtosis` = kurtosis(value)-3,
                 Q05 = quantile(value, 0.05),
                 Q95 = quantile(value, 0.95)) %>%
       mutate(AC1 = c(A_acf[1], P_acf[1]),
              AC2 = c(A_acf[2], P_acf[2])) %>%
-      add_row(Variable = "A (without stocks)", Mean = 1, Median = 1,
-              Std = m$params$dbar*m$params$SDe,
+      add_row(Variable = "A (without stocks)",
+              Mean = m$params$dbar,
+              Median = m$params$dbar,
+              CV = m$params$dbar*m$params$SDe / m$params$dbar,
               Skewness = 0, `Excess-kurtosis` = 0,
-              Q05 = qnorm(0.05, mean = 1, sd = m$params$dbar*m$params$SDe),
-              Q95 = qnorm(0.95, mean = 1, sd = m$params$dbar*m$params$SDe),
+              Q05 = qnorm(0.05, mean = m$params$dbar, sd = m$params$dbar * m$params$SDe),
+              Q95 = qnorm(0.95, mean = m$params$dbar, sd = m$params$dbar * m$params$SDe),
               AC1 = 0, AC2 = 0) %>%
-      add_row(Variable = "P (without stocks)", Mean = 1, Median = 1,
-              Std = -m$params$pbar*m$params$SDe/m$params$elastD,
+      add_row(Variable = "P (without stocks)", Mean = m$params$pbar, Median = m$params$pbar,
+              CV = -m$params$pbar*m$params$SDe/m$params$elastD / m$params$pbar,
               Skewness = 0, `Excess-kurtosis` = 0,
-              Q05 = qnorm(0.05, mean = 1, sd = -m$params$pbar*m$params$SDe/m$params$elastD),
-              Q95 = qnorm(0.95, mean = 1, sd = -m$params$pbar*m$params$SDe/m$params$elastD),
+              Q05 = qnorm(0.05, mean = m$params$pbar, sd = -m$params$pbar * m$params$SDe / m$params$elastD),
+              Q95 = qnorm(0.95, mean = m$params$pbar, sd = -m$params$pbar * m$params$SDe / m$params$elastD),
               AC1 = 0, AC2 = 0)
 
   })
