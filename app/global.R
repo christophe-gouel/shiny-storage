@@ -20,12 +20,15 @@ SolveStorage <- function(model) {
   w <- model$shocks$w
 
   β <- (1 - δ)/(1 + r)
-  P <- model$P
 
   demand <- function(p) dbar * (p / pbar)^elastD
   invdemand <- function(d) pbar * (d / dbar)^(1 / elastD)
+  model$invdemand <- invdemand
 
-  S <- model$A
+  A <- model$A
+  P <- model$P
+  S <- model$S
+  D <- demand(P)
 
   dis <- Inf
   Display <- FALSE
@@ -33,10 +36,15 @@ SolveStorage <- function(model) {
   MaxIter <- 1E3
   TolX <- 1E-5
 
-  n <- length(A)
+  n <- length(S)
   kshocks <- length(e)
 
-  PriceInterp <- splinefun(A, P, method = "monoH.FC")
+  DemandInterp <- splinefun(A, D, method = "monoH.FC")
+  DemandFunction <- function(a) {
+    D <- a
+    D[a > A[1]] <- DemandInterp(a[a > A[1]])
+    return(D)
+  }
 
   while(dis > TolX & Iter < MaxIter) {
     Iter <- Iter + 1
@@ -52,12 +60,13 @@ SolveStorage <- function(model) {
     # Update the price and its approximation
     Pnext <- invdemand(DemandFunction(Anext))
     P <- β * matrix(Pnext, nrow = n, ncol = kshocks) %*% w - k * pbar
-    D <- invdemand(P)
+    D <- demand(P)
     A <- S + D
     DemandInterp <- splinefun(A, D, method = "monoH.FC")
     DemandFunction <- function(a) {
       D <- a
       D[a > A[1]] <- DemandInterp(a[a > A[1]])
+      return(D)
     }
 
     dis <- max(abs(P - Pold))
@@ -67,15 +76,16 @@ SolveStorage <- function(model) {
   model$SolveStat <- list(dis = dis, Iter = Iter, exitflag = Iter < MaxIter)
   model$A <- A
   model$P <- P
-  model$PriceInterp <- PriceInterp
-  model$StorageInterp <- splinefun(A, S, method = "monoH.FC")
+  model$PriceFunction <- function(a) invdemand(DemandFunction(a))
+  model$DemandFunction <- DemandFunction
+  model$StorageFunction <- function(a) pmax(0, a - DemandFunction(a))
 
   return(model)
 }
 
 SimulateStorage <- function(model, A0, nper = 100, nrep = 100, nburn = 20) {
-  StorageInterp <- model$StorageInterp
-  PriceInterp <- model$PriceInterp
+  StorageFunction <- model$StorageFunction
+  PriceFunction <- model$PriceFunction
   dbar  <- model$params$dbar
   δ <- model$params$δ
   SDe <- model$params$SDe
@@ -87,9 +97,9 @@ SimulateStorage <- function(model, A0, nper = 100, nrep = 100, nburn = 20) {
   e <- c(rep(NA, nrep), rnorm(nrep * (ntot - 1))) %>%
     matrix(nrow = nrep, ncol = ntot)
   for (t in 1:ntot) {
-    if (t > 1) A[,t] <- (1 - δ) * S[,t-1] + dbar * (1 + SDe * e[,t])
-    S[,t] <- StorageInterp(A[,t])
-    P[,t] <- PriceInterp(A[,t])
+    if (t > 1) A[,t] <- (1 - δ) * S[,t-1] + dbar * exp(SDe * e[,t])
+    S[,t] <- StorageFunction(A[,t])
+    P[,t] <- PriceFunction(A[,t])
   }
   return(list(A = A[,(nburn+1):ntot],
               S = S[,(nburn+1):ntot],
