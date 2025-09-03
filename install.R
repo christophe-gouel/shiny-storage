@@ -1,5 +1,0 @@
-install.packages("dplyr")
-install.packages("ggplot2")
-install.packages("moments")
-install.packages("statmod")
-install.packages("tidyr")
